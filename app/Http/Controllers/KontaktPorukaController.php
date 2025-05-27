@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\KontaktPoruka;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 class KontaktPorukaController extends Controller
@@ -22,21 +21,6 @@ class KontaktPorukaController extends Controller
         }
 
         $poruka = KontaktPoruka::create($request->only('ime', 'email', 'poruka'));
-
-        // 📩 Poruka korisniku
-        Mail::raw("Poštovani {$poruka->ime},\n\nPrimili smo vašu poruku i uskoro ćemo vas kontaktirati.\n\nHvala na poverenju,\nWood'n'Shop tim", function ($message) use ($poruka) {
-            $message->to($poruka->email)
-                    ->subject('Vaša poruka je primljena');
-        });
-
-        // 📩 Poruka adminu
-        $adminEmail = env('ADMIN_EMAIL');
-        if ($adminEmail) {
-            Mail::raw("Nova kontakt poruka od: {$poruka->ime}\nEmail: {$poruka->email}\nPoruka: {$poruka->poruka}", function ($message) use ($adminEmail) {
-                $message->to($adminEmail)
-                        ->subject('Stigla je nova kontakt poruka');
-            });
-        }
 
         return response()->json([
             'message' => 'Poruka uspešno poslata.',

@@ -22,8 +22,8 @@ class ProizvodController extends Controller
             'popust'    => 'nullable|integer|min:0|max:100',
             'kategorija'=> 'required|string|max:100',
             'slike'     => 'nullable|array',
-            'slike.*'   => 'image|mimes:jpeg,png,jpg,webp|max:2048',
-            'napomena'  => 'nullable|string',
+            'slike.*'   => 'image|mimes:jpeg,png,jpg,webp',
+            'napomena'  => 'nullable|string', 
         ]);
 
         if ($validator->fails()) {
@@ -93,5 +93,11 @@ class ProizvodController extends Controller
         $proizvod->delete();
 
         return response()->json(['message' => 'Obrisano']);
+    }
+
+    public function byCategory($kategorija)
+    {
+        $proizvodi = Proizvod::where('kategorija', $kategorija)->latest()->paginate(12);
+        return response()->json($proizvodi);
     }
 }

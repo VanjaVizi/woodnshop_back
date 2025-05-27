@@ -4,7 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\KontaktPorukaController;
-
+use App\Http\Controllers\ProizvodController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -23,17 +23,20 @@ Route::post('/login',    [AuthController::class, 'login']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
 Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
-use App\Http\Controllers\ProizvodController;
+
 
 // NEZAŠTIĆENE RUTE
-Route::get('/proizvodi', [ProizvodController::class, 'index']);
-Route::get('/proizvodi/{id}', [ProizvodController::class, 'show']);
+
+Route::get('/proizvodi/kategorija/{kategorija}', [ProizvodController::class, 'byCategory']);
+
 
 // ZAŠTIĆENE RUTE – npr. preko Sanctum middleware-a
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/proizvodi', [ProizvodController::class, 'store']);
     Route::put('/proizvodi/{id}', [ProizvodController::class, 'update']);
     Route::delete('/proizvodi/{id}', [ProizvodController::class, 'destroy']);
+    Route::get('/proizvodi', [ProizvodController::class, 'index']);
+    Route::get('/proizvodi/{id}', [ProizvodController::class, 'show']);
 });
 
 
