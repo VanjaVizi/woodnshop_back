@@ -9,10 +9,16 @@ class Proizvod extends Model
 {
     use HasFactory;
      protected $fillable = [
-        'naziv', 'opis', 'cena', 'popust', 'kategorija', 'slike', 'napomena',
+        'naziv', 'opis', 'cena', 'popust', 'kategorija', 'slike', 'napomena', 'kategorija_id'
     ];
 
     protected $casts = [
         'slike' => 'array',
     ];
+
+
+        public function kategorijaObjekat()
+        {
+            return $this->belongsTo(Kategorija::class, 'kategorija_id');
+        }
 }
