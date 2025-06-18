@@ -48,6 +48,7 @@ class ProizvodController extends Controller
             'cena'       => $request->cena,
             'popust'     => $request->popust ?? 0,
             'kategorija' => $kategorija->naziv,
+            'kategorija_id' => $request->kategorija_id, 
             'napomena'   => $request->napomena,
             'slike'      => $putanjeSlika,
         ]);
@@ -123,4 +124,53 @@ class ProizvodController extends Controller
         $proizvodi = Proizvod::where('kategorija', $kategorija)->latest()->paginate(12);
         return response()->json($proizvodi);
     }
+
+
+    public function showByNaziv($naziv)
+        {
+            $proizvod = Proizvod::where('naziv', urldecode($naziv))->first();
+
+            if (!$proizvod) {
+                return response()->json(['message' => 'Proizvod nije pronađen.'], 404);
+            }
+
+            return response()->json(['data' => $proizvod]);
+        }
+
+        public function deleteImage($id, $imageIndex)
+            {
+                $proizvod = Proizvod::findOrFail($id);
+
+                $slike = $proizvod->slike ?? [];
+                if (!isset($slike[$imageIndex])) {
+                    return response()->json(['message' => 'Slika nije pronađena.'], 404);
+                }
+
+                // Obriši fajl sa diska ako je uploadovan
+                $filePath = str_replace('/storage/', '', $slike[$imageIndex]);
+                Storage::disk('public')->delete($filePath);
+
+                // Ukloni iz niza i ažuriraj redosled
+                array_splice($slike, $imageIndex, 1);
+
+                $proizvod->slike = $slike;
+                $proizvod->save();
+
+                return response()->json(['slike' => $slike]);
+            }
+
+        public function reorderImages(Request $request, $id)
+        {
+            $proizvod = Proizvod::findOrFail($id);
+            $newOrder = $request->input('slike'); // niz novih putanja slika
+            if (!is_array($newOrder) || count($newOrder) !== count($proizvod->slike)) {
+                return response()->json(['message' => 'Neispravan niz slika.'], 422);
+            }
+            $proizvod->slike = $newOrder;
+            $proizvod->save();
+            return response()->json(['slike' => $proizvod->slike]);
+        }
+
+
+
 }

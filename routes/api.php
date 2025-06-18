@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CenovnikController;
 use App\Http\Controllers\KontaktPorukaController;
 use App\Http\Controllers\ProizvodController;
 use App\Http\Controllers\KategorijaController;
@@ -26,18 +27,32 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login',    [AuthController::class, 'login']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
-Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
- 
+
+ Route::get('/proizvodi/{proizvod_id}/cenovnici', [CenovnikController::class, 'index']);
 Route::get('/proizvodi/kategorija/{kategorija}', [ProizvodController::class, 'byCategory']);
+Route::get('/proizvodi/naziv/{naziv}', [ProizvodController::class, 'showByNaziv']);
+    Route::get('/proizvodi', [ProizvodController::class, 'index']);
+    Route::get('/proizvodi/{id}', [ProizvodController::class, 'show']);
 Route::post('/kontakt', [KontaktPorukaController::class, 'store']);
 
 // ZAŠTIĆENE RUTE – samo admin
 Route::middleware('auth:sanctum')->group(function () {
+
+
+
+
+
     Route::post('/proizvodi', [ProizvodController::class, 'store']);
     Route::put('/proizvodi/{id}', [ProizvodController::class, 'update']);
     Route::delete('/proizvodi/{id}', [ProizvodController::class, 'destroy']);
-    Route::get('/proizvodi', [ProizvodController::class, 'index']);
-    Route::get('/proizvodi/{id}', [ProizvodController::class, 'show']);
+    Route::delete('/proizvodi/{id}/slika/{index}', [ProizvodController::class, 'deleteImage']);
+    Route::post('/proizvodi/{id}/reorder-slike', [ProizvodController::class, 'reorderImages']);
+
+
+
+        Route::post('/cenovnici', [CenovnikController::class, 'store']);
+        Route::put('/cenovnici/{id}', [CenovnikController::class, 'update']);
+        Route::delete('/cenovnici/{id}', [CenovnikController::class, 'destroy']);
 
  
     Route::post('/kategorije', [KategorijaController::class, 'store']);
@@ -48,6 +63,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/kontakt', [KontaktPorukaController::class, 'index']);  
 
 });
-
+Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
 
 

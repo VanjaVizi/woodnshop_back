@@ -17,6 +17,11 @@ class Proizvod extends Model
     ];
 
 
+    public function cenovnici()
+        {
+            return $this->hasMany(Cenovnik::class);
+        }
+
         public function kategorijaObjekat()
         {
             return $this->belongsTo(Kategorija::class, 'kategorija_id');
