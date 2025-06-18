@@ -3,9 +3,12 @@
  
 namespace App\Http\Controllers;
 
+use App\Mail\NarudzbinaKreiranaAdmin;
+use App\Mail\NarudzbinaKreiranaKupac;
 use App\Models\Narudzbina;
 use App\Models\StavkaNarudzbine;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class NarudzbinaController extends Controller
 {
@@ -57,7 +60,18 @@ class NarudzbinaController extends Controller
                     'napomena_kupca' => $stavka['napomenaKupca'] ?? null,
                 ]);
             }
+            // Ponovo učitaj narudzbinu sa stavkama zbog maila
+            $narudzbina->load('stavke');
 
+            // Šalji mejl kupcu
+            if ($narudzbina->email) {
+                Mail::to($narudzbina->email)
+                    ->send(new NarudzbinaKreiranaKupac($narudzbina));
+            }
+
+            // Šalji mejl adminu (ovde stavi admin email koji želiš)
+            Mail::to('vanjavizicasovi@gmail.com')
+                ->send(new NarudzbinaKreiranaAdmin($narudzbina));
             return response()->json(['message' => 'Narudžbina uspešno sačuvana!'], 201);
         }
 
