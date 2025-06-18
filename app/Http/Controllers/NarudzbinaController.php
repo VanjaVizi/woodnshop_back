@@ -61,4 +61,48 @@ class NarudzbinaController extends Controller
             return response()->json(['message' => 'Narudžbina uspešno sačuvana!'], 201);
         }
 
+        public function index(Request $request)
+    {
+        $query = Narudzbina::with('stavke');
+
+        // Filtriranje po imenu, prezimenu, gradu, emailu
+        if ($request->filled('ime')) {
+            $query->where('ime', 'like', '%' . $request->ime . '%');
+        }
+        if ($request->filled('prezime')) {
+            $query->where('prezime', 'like', '%' . $request->prezime . '%');
+        }
+        if ($request->filled('grad')) {
+            $query->where('grad', 'like', '%' . $request->grad . '%');
+        }
+        if ($request->filled('email')) {
+            $query->where('email', 'like', '%' . $request->email . '%');
+        }
+        if ($request->filled('datum_od')) {
+            $query->whereDate('created_at', '>=', $request->datum_od);
+        }
+        if ($request->filled('datum_do')) {
+            $query->whereDate('created_at', '<=', $request->datum_do);
+        }
+
+        $perPage = $request->input('per_page', 15);
+        $narudzbine = $query->orderBy('created_at', 'desc')->paginate($perPage);
+
+        return response()->json($narudzbine);
+    }
+
+    /**
+     * Brisanje narudžbine i svih stavki.
+     */
+    public function destroy($id)
+    {
+        $narudzbina = Narudzbina::with('stavke')->findOrFail($id);
+
+       
+        $narudzbina->stavke()->delete();
+        $narudzbina->delete();
+
+        return response()->json(['message' => 'Narudžbina uspešno obrisana!']);
+    }
+
 }

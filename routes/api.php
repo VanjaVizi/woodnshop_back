@@ -42,7 +42,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 
-
+        Route::get('/narudzbine', [NarudzbinaController::class, 'index']);      // listanje sa paginacijom/filtrima
+        Route::delete('/narudzbine/{id}', [NarudzbinaController::class, 'destroy']); // brisanje narudžbine
 
     Route::post('/proizvodi', [ProizvodController::class, 'store']);
     Route::put('/proizvodi/{id}', [ProizvodController::class, 'update']);

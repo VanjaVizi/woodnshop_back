@@ -9,7 +9,18 @@ class Narudzbina extends Model
 {
      use HasFactory;
 
-    protected $fillable = ['ime', 'email', 'telefon', 'napomena'];
+   protected $fillable = [
+    'ime',
+    'prezime',
+    'email',
+    'telefon',
+    'adresa',
+    'grad',
+    'postanski_broj',
+    'placanje',
+    'napomena'
+];
+
 
     public function stavke()
     {
