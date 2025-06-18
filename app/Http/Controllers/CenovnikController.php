@@ -15,7 +15,7 @@ class CenovnikController extends Controller
     public function store(Request $request)
         {
             $data = $request->validate([
-                'proizvod_id' => 'required|exists:proizvodi,id',
+                'proizvod_id' => 'required|exists:proizvods,id',
                 'naziv' => 'required|string|max:255',
                 'cena' => 'required|numeric|min:0',
                 'apply_to_category' => 'nullable|boolean',
@@ -57,25 +57,82 @@ class CenovnikController extends Controller
             return response()->json($cenovnik, 201);
         }
 
-    public function update(Request $request, $id)
-    {
-        $cenovnik = Cenovnik::findOrFail($id);
+   public function update(Request $request, $id)
+{
+    $cenovnik = Cenovnik::findOrFail($id);
 
-        $data = $request->validate([
-            'naziv' => 'sometimes|required|string|max:255',
-            'cena' => 'sometimes|required|numeric|min:0',
+    $data = $request->validate([
+        'naziv' => 'sometimes|required|string|max:255',
+        'cena' => 'sometimes|required|numeric|min:0',
+        'apply_to_category' => 'nullable|boolean',
+    ]);
+
+    $applyToCategory = $data['apply_to_category'] ?? false;
+
+    if ($applyToCategory) {
+        $proizvod = Proizvod::findOrFail($cenovnik->proizvod_id);
+        $kategorijaId = $proizvod->kategorija_id;
+
+        // Pronađi sve proizvode u toj kategoriji
+        $proizvodi = Proizvod::where('kategorija_id', $kategorijaId)->pluck('id');
+
+        // Pronađi sve cenovnike sa istim nazivom u toj kategoriji
+        $cenovniciUKategoriji = Cenovnik::whereIn('proizvod_id', $proizvodi)
+            ->where('naziv', $cenovnik->naziv)
+            ->get();
+
+        foreach ($cenovniciUKategoriji as $c) {
+            $c->update([
+                'naziv' => $data['naziv'] ?? $c->naziv,
+                'cena' => $data['cena'] ?? $c->cena,
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Cenovnici su ažurirani za celu kategoriju.',
+            'data' => $cenovniciUKategoriji
         ]);
-
-        $cenovnik->update($data);
-
-        return response()->json($cenovnik);
     }
 
-    public function destroy($id)
-    {
-        $cenovnik = Cenovnik::findOrFail($id);
-        $cenovnik->delete();
+    // Ažuriranje samo jednog cenovnika
+    $cenovnik->update($data);
 
-        return response()->json(['message' => 'Cenovnik obrisan.']);
+    return response()->json($cenovnik);
+}
+
+
+    public function destroy(Request $request, $id)
+{
+    $cenovnik = Cenovnik::findOrFail($id);
+
+    $applyToCategory = $request->boolean('apply_to_category', false);
+
+    if ($applyToCategory) {
+        $proizvod = Proizvod::findOrFail($cenovnik->proizvod_id);
+        $kategorijaId = $proizvod->kategorija_id;
+
+        // Pronađi sve proizvode u kategoriji
+        $proizvodi = Proizvod::where('kategorija_id', $kategorijaId)->pluck('id');
+
+        // Pronađi sve cenovnike sa istim nazivom
+        $cenovniciZaBrisanje = Cenovnik::whereIn('proizvod_id', $proizvodi)
+            ->where('naziv', $cenovnik->naziv)
+            ->get();
+
+        foreach ($cenovniciZaBrisanje as $c) {
+            $c->delete();
+        }
+
+        return response()->json([
+            'message' => 'Cenovnici obrisani za celu kategoriju.',
+            'obrisano' => $cenovniciZaBrisanje->count()
+        ]);
     }
+
+    // Brisanje samo jednog cenovnika
+    $cenovnik->delete();
+
+    return response()->json(['message' => 'Cenovnik obrisan.']);
+}
+
 }

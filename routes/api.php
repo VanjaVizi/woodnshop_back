@@ -7,6 +7,8 @@ use App\Http\Controllers\CenovnikController;
 use App\Http\Controllers\KontaktPorukaController;
 use App\Http\Controllers\ProizvodController;
 use App\Http\Controllers\KategorijaController;
+use App\Http\Controllers\NarudzbinaController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -17,7 +19,7 @@ use App\Http\Controllers\KategorijaController;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-
+Route::post('/narudzbine', [NarudzbinaController::class, 'store']);
 
 Route::get('/kategorije', [KategorijaController::class, 'index']);
 Route::get('/kategorije/{slug}', [KategorijaController::class, 'showBySlug']);
@@ -34,7 +36,7 @@ Route::get('/proizvodi/naziv/{naziv}', [ProizvodController::class, 'showByNaziv'
     Route::get('/proizvodi', [ProizvodController::class, 'index']);
     Route::get('/proizvodi/{id}', [ProizvodController::class, 'show']);
 Route::post('/kontakt', [KontaktPorukaController::class, 'store']);
-
+Route::get('/proizvodi/{id}/naziv-kategorija', [ProizvodController::class, 'nazivIKategorija']);
 // ZAŠTIĆENE RUTE – samo admin
 Route::middleware('auth:sanctum')->group(function () {
 

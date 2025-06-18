@@ -10,10 +10,23 @@ use App\Models\Kategorija;
 
 class ProizvodController extends Controller
 {
-    public function index()
-    {
-        return Proizvod::latest()->paginate(10);
-    }
+        public function index(Request $request)
+        {
+            $query = Proizvod::query();
+
+            // Pretraga po nazivu
+            if ($request->has('search') && $request->search !== '') {
+                $query->where('naziv', 'like', '%' . $request->search . '%');
+            }
+
+            // Filtriranje po kategoriji
+            if ($request->filled('kategorija_id')) {
+                $query->where('kategorija_id', $request->kategorija_id);
+            }
+
+            return $query->latest()->paginate(10);
+        }
+
 
     public function store(Request $request)
     {
@@ -171,6 +184,13 @@ class ProizvodController extends Controller
             return response()->json(['slike' => $proizvod->slike]);
         }
 
-
+        public function nazivIKategorija($id)
+        {
+            $proizvod = Proizvod::with('kategorija')->findOrFail($id);
+            return response()->json([
+                'naziv' => $proizvod->naziv,
+                'kategorija' => $proizvod->kategorija ? $proizvod->kategorija->naziv : null
+            ]);
+        }
 
 }
